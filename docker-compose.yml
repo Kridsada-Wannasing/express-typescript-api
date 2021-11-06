@@ -1,0 +1,48 @@
+version: "3"
+services:
+  db:
+    image: mysql
+    container_name: db
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    ports:
+      - 3306:3306
+    networks:
+      - mysql
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST:-localhost}
+      MYSQL_USER: ${MYSQL_USER:-username}
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-db}
+    volumes:
+      - my-datavolume:/var/lib/mysql
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    networks:
+      - mysql
+    ports:
+      - 8080:8080
+
+  express:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: express
+    container_name: express
+    networks:
+      - mysql
+    ports:
+      - 3000:3000
+
+networks:
+  mysql:
+    external: false
+    driver: bridge
+
+volumes:
+  my-datavolume:
+    driver: local
