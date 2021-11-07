@@ -4,10 +4,10 @@ import { User } from "../entities/user.entity";
 
 const config: ConnectionOptions = {
   type: "mysql",
-  host: "db",
+  host: "mysql",
   port: 3306,
-  username: "username",
-  password: "password",
+  username: "root",
+  password: "123456",
   database: "db",
   entities: [User, Address],
   synchronize: true,

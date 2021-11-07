@@ -6,10 +6,7 @@ export class Address {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => User, (user: User): Address => user.address, {
-    cascade: true,
-    eager: true,
-  })
+  @OneToOne(() => User, (user: User): Address => user.address)
   user: User;
 
   @Column()

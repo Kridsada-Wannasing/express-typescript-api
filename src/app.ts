@@ -1,35 +1,36 @@
-import * as express from "express";
-import { UserRouter } from "./routes/router";
+import express from "express";
+import router from "./routes/router";
 import { createConnection } from "typeorm";
 import config from "./config/ormconfig";
+import "dotenv/config";
 
 class App {
-  private userRouter: UserRouter;
   private app: express.Application;
   private port: number;
 
   constructor() {
     this.app = express();
     this.initConfig();
-    this.createConnectionAndRoutes();
+    this.createConnection();
+    this.routes();
   }
 
   public initConfig() {
     this.app.use(express.json());
     this.app.use(express.urlencoded());
-    this.port = Number(process.env.PORT) || 3001;
+    this.port = Number(process.env.PORT) || 3000;
   }
 
-  public async createConnectionAndRoutes() {
-    await createConnection(config);
+  public createConnection() {
+    return createConnection(config);
+  }
 
-    this.userRouter = new UserRouter();
-
+  public routes() {
     this.app.get("/", (req: express.Request, res: express.Response) => {
       res.send("Hi there!");
     });
 
-    this.app.use("/user", this.userRouter.router);
+    this.app.use("/user", router);
   }
 
   public listen() {

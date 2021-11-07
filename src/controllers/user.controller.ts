@@ -1,37 +1,65 @@
-import { getRepository } from "typeorm";
-import { NextFunction, Request, Response } from "express";
+import { getRepository, Repository, ILike } from "typeorm";
+import { Request, Response } from "express";
 import { User } from "../entities/user.entity";
+import { filterSearchParams } from "../utils/search-params";
 
-export class UserController {
-  private userRepository = getRepository<User>(User);
+export const getAll = async (req: Request, res: Response) => {
+  const userRepository: Repository<User> = getRepository<User>(User);
 
-  async getAll(req: Request, res: Response, next: NextFunction) {
-    return this.userRepository.find();
+  const name = req.query?.name || "";
+  const email = req.query?.email || "";
+
+  const searchParams = filterSearchParams(req.query);
+
+  const where = { name: ILike(`%${name}%`), email: ILike(`%${email}%`) };
+
+  if (Object.keys(searchParams).length > 0) {
+    const [data, total] = await userRepository.findAndCount({
+      where,
+      ...searchParams,
+    });
+
+    return res.json({
+      data,
+      count: data.length,
+      total,
+    });
   }
 
-  async getOne(req: Request, res: Response, next: NextFunction) {
-    return this.userRepository.findOne(req.params.id);
-  }
+  const users = await userRepository.find({ where });
+  res.json(users);
+};
 
-  async create(req: Request, res: Response, next: NextFunction) {
-    const user = this.userRepository.create(req.body);
-    return this.userRepository.save(user);
-  }
+export const getOne = async (req: Request, res: Response) => {
+  const userRepository: Repository<User> = getRepository<User>(User);
+  const user = await userRepository.findOne(req.params.id);
+  res.json(user);
+};
 
-  async update(req: Request, res: Response, next: NextFunction) {
-    const user = await this.userRepository.findOne(req.params.id);
+export const create = async (req: Request, res: Response) => {
+  const userRepository: Repository<User> = getRepository<User>(User);
+  const entry = userRepository.create(req.body);
+  const user = await userRepository.save(entry);
+  res.json(user);
+};
 
-    if (!user) throw new Error("user not found");
+export const update = async (req: Request, res: Response) => {
+  const userRepository: Repository<User> = getRepository<User>(User);
+  const user = await userRepository.findOne(req.params.id);
 
-    const updatedUser = this.userRepository.merge(user, req.body);
-    return this.userRepository.save(updatedUser);
-  }
+  if (!user) throw new Error("user not found");
 
-  async remove(req: Request, res: Response, next: NextFunction) {
-    let userToRemove = await this.userRepository.findOne(req.params.id);
+  const mergedEntry = userRepository.merge(user, req.body);
+  const updatedUser = await userRepository.save(mergedEntry);
+  res.json(updatedUser);
+};
 
-    if (!userToRemove) throw new Error("user not found");
+export const remove = async (req: Request, res: Response) => {
+  const userRepository: Repository<User> = getRepository<User>(User);
+  const userToRemove = await userRepository.findOne(req.params.id);
 
-    await this.userRepository.remove(userToRemove);
-  }
-}
+  if (!userToRemove) throw new Error("user not found");
+
+  await userRepository.remove(userToRemove);
+  res.json({ status: "success" });
+};
