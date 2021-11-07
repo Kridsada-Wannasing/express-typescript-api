@@ -1,14 +1,14 @@
 version: "3"
 services:
-  db:
+  mysql:
     image: mysql
-    container_name: db
+    container_name: mysql
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     ports:
       - 3306:3306
     networks:
-      - mysql
+      - project
     environment:
       MYSQL_HOST: ${MYSQL_HOST:-localhost}
       MYSQL_USER: ${MYSQL_USER:-username}
@@ -23,7 +23,7 @@ services:
     container_name: adminer
     restart: always
     networks:
-      - mysql
+      - project
     ports:
       - 8080:8080
 
@@ -34,12 +34,14 @@ services:
     image: express
     container_name: express
     networks:
-      - mysql
+      - project
     ports:
       - 3000:3000
+    depends_on:
+      - mysql
 
 networks:
-  mysql:
+  project:
     external: false
     driver: bridge
 

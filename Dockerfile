@@ -10,5 +10,5 @@ RUN yarn install
 
 COPY . .
 
-EXPOSE 8080
-CMD [ "yarn", "dev" ]
+EXPOSE 3000
+CMD [ "yarn", "serve" ]
